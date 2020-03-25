@@ -23,10 +23,13 @@ def ml_loop():
     # 1. Put the initialization code here.
     ball_served = False
     change_D=False
-    place_check=75
-    placex=0
+    change=0                #calculate the prediction
+    place_check=75          #set the prediction point
+    placex=0                #x,y +- about direction
     placey=0 
-    bricks=[]
+    bricks=[]               #to see if bricks have decrease
+    ball_place=(95,395)     # frame of ball place
+   
     # 2. Inform the game process that ml process is ready before start the loop.
     comm.ml_ready()
    
@@ -44,8 +47,9 @@ def ml_loop():
             change_D=False
             ball_place=(95,395)        
             placex=0
-            placey=0 
-            bricks=scene_info.bricks
+            placey=0
+            change=0 
+            bricks=scene_info.bricks.copy()
             # 3.2.1. Inform the game process that ml process is ready
             comm.ml_ready()           
             continue
@@ -56,66 +60,75 @@ def ml_loop():
             comm.send_instruction(scene_info.frame, PlatformAction.SERVE_TO_LEFT)
             ball_served = True  
             ball_place=scene_info.ball 
-            bricks=scene_info.bricks
-            #print(len(scene_info.bricks),scene_info.bricks)
+            bricks=scene_info.bricks.copy()   
             continue   
-        elif ball_served:
-            if placex!=scene_info.ball[0]-ball_place[0] or placey>scene_info.ball[1]-ball_place[1]:
-                change_D=True
-            placex=scene_info.ball[0]-ball_place[0]             
+        elif ball_served:         
+            placex=scene_info.ball[0]-ball_place[0]                
             placey=scene_info.ball[1]-ball_place[1] 
             ball_place=scene_info.ball 
-        # the ball pull up
-        if  placey<0:
-            change_D=True
+        # the ball pull up follow the ball
+        if  placey< 0:              
+            change_D=True                                        
             if(placex>0):
                 comm.send_instruction(scene_info.frame, PlatformAction.MOVE_RIGHT)
-                #print("UR")
             else:
                 comm.send_instruction(scene_info.frame, PlatformAction.MOVE_LEFT)
-                #print("UL")
+ 
         # the ball going down
         else:
-            if change_D==True:
-                change_D=False
-                #ball - platform length
-                dy= (395-scene_info.ball[1])//placey
-                # ball play to right
-                if placex>0:
-                    dx=(200-scene_info.ball[0])//placex   #ball to right length
-                    if(dx>dy):
-                        place_check=scene_info.ball[0]+dy*placex 
+            if(abs(placex)>abs(change)): #check if the ball is speeding up
+                change_D=True             
+            if change_D==True  and scene_info.ball[1]>250 : # latter one avoid frame delay
+                change_D=False                        
+                Y=scene_info.ball[1]    #get the ball place
+                X=scene_info.ball[0]  
+                if abs(placex)<7 and abs(placex)!=10:
+                    if placex>0: 
+                        change=7
                     else:
-                        place_check=(dy-dx)*placex % 200                                                         
-                        if (dy-dx)*placex//200%2==0:
-                            place_check=200-place_check
-                        #print("pp")                                                                                   
-                # ball play to left                   
+                        change=-7
                 else:
-                    dx=scene_info.ball[0]//abs(placex)
-                    if(dx>dy):
-                        place_check=scene_info.ball[0]-dy*abs(placex)
-                        #print("q")  
+                    change=placex   
+                Num=int((395-scene_info.ball[1])/placey)+1  #count the ball step to plateform
+                '''---------------check the route----------------------'''
+                for i in  range(Num):                                 
+                    if change >0:
+                        for item in bricks:
+                            if(Y>=item[1]-5 and Y<=item[1]+10 and X<=item[0] and X>=item[0]-change):
+                                change=-change
+                                X=item[0]-5                                
+                                break                            
                     else:
-                        place_check=(dy-dx)*abs(placex)%200
-                        if (dy-dx)*abs(placex)//200%2==1:
-                            place_check=200-place_check
-                        #print("qq")  
-               # print(placex,placey)
-            #check if there is barrier on the path
-            #move the platform  
-            if scene_info.platform[0]+10>place_check :
+                        for item in bricks:                         
+                            if(Y>=item[1]-5 and Y<=item[1]+10 and X<=item[0]+25 and X>=item[0]-change ):
+                                change=-change
+                                X=item[0]+25
+                                break
+                    Y+=placey
+                    X+=change
+                    if X>=195 or X<=0:
+                        change=-change 
+                        if X>180:
+                            X=195
+                        else:
+                            X=0    
+                place_check=X
+            elif scene_info.ball[1]<250:  #get the platform back to center
+                place_check=80
+     
+            # move the platform  
+            if scene_info.platform[0]+10>place_check:
                 comm.send_instruction(scene_info.frame, PlatformAction.MOVE_LEFT)
-                #print("DL")
+             
             elif scene_info.platform[0]+30<place_check:
                 comm.send_instruction(scene_info.frame, PlatformAction.MOVE_RIGHT)
-                #print("DR")
-        if len(bricks)>len(scene_info.bricks):
+
+        #if hit the brick recheck the place
+        if len(bricks)!=len(scene_info.bricks):
             retD = list(set(bricks).difference(set(scene_info.bricks)))
-           # print(scene_info.ball)
-           # print(retD[0],"==")
-            
-            bricks=scene_info.bricks
+            change_D=True                       
+            bricks=scene_info.bricks.copy()
+    
     
 
 
