@@ -73,7 +73,7 @@ def ml_loop():
             placex=scene_info.ball[0]-ball_place[0]             
             placey=scene_info.ball[1]-ball_place[1] 
             ball_place=scene_info.ball 
-            
+
         if  placey<0:
             change_D=True
             if(placex>0):
@@ -109,7 +109,7 @@ def ml_loop():
                         if (dy-dx)*abs(placex)//200%2==1:
                             place_check=200-place_check
                         #print("qq")  
-                print(placex,placey)
+              #  print(placex,placey)
             #check if there is barrier on the path
             #move the platform  
             if scene_info.platform[0]+10>place_check :
@@ -120,7 +120,7 @@ def ml_loop():
                 #print("DR")
         if len(bricks)>len(scene_info.bricks):
             retD = list(set(bricks).difference(set(scene_info.bricks)))
-            print(scene_info.ball)
-            print(retD[0],"==")
+            #print(scene_info.ball)
+           # print(retD[0],"==")
             
             bricks=scene_info.bricks
