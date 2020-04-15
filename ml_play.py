@@ -60,7 +60,7 @@ def ml_loop():
             comm.send_instruction(scene_info.frame, PlatformAction.SERVE_TO_LEFT)
             ball_served = True  
             ball_place=scene_info.ball 
-            bricks=scene_info.bricks.copy()   
+            bricks=scene_info.bricks.copy() +scene_info.hard_bricks.copy()  
             continue   
         elif ball_served:         
             placex=scene_info.ball[0]-ball_place[0]                
@@ -131,10 +131,11 @@ def ml_loop():
                 comm.send_instruction(scene_info.frame, PlatformAction.MOVE_RIGHT)
 
         #if hit the brick recheck the place
-        if len(bricks)!=len(scene_info.bricks):
-            retD = list(set(bricks).difference(set(scene_info.bricks)))
+        if len(bricks)!=len(scene_info.bricks)+len(scene_info.hard_bricks):
+            #retD = list(set(bricks).difference(set(scene_info.bricks)))
             change_D=True                       
-            bricks=scene_info.bricks.copy()
+            bricks=scene_info.bricks.copy()+scene_info.hard_bricks.copy()
+        
     
     
 
