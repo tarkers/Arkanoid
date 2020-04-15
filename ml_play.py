@@ -69,7 +69,7 @@ def ml_loop():
         # the ball pull up follow the ball
         if  placey< 0:              
             change_D=True 
-            if scene_info.ball[1]<300:
+            if scene_info.ball[1]<250:
                 if(scene_info.platform[0]<80):
                     comm.send_instruction(scene_info.frame, PlatformAction.MOVE_RIGHT)
                 else:
