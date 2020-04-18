@@ -29,7 +29,7 @@ def ml_loop():
     placey=0 
     bricks=[]               #to see if bricks have decrease
     ball_place=(95,395)     # frame of ball place
-   
+    run=False
     # 2. Inform the game process that ml process is ready before start the loop.
     comm.ml_ready()
    
@@ -124,17 +124,21 @@ def ml_loop():
                 place_check=80
             
             if scene_info.ball[1]>390:
-                    if placex>0:
+                    if placex>0 and run==False:
                         comm.send_instruction(scene_info.frame, PlatformAction.MOVE_RIGHT)
-                    else:
+                    elif run==True:
                         comm.send_instruction(scene_info.frame, PlatformAction.MOVE_LEFT)
+                    else:
+                       comm.send_instruction(scene_info.frame, PlatformAction.NONE) 
             # move the platform 
               
             if scene_info.platform[0]+10>place_check:
                 comm.send_instruction(scene_info.frame, PlatformAction.MOVE_LEFT)
+                run=False
              
             elif scene_info.platform[0]+30<place_check:
                 comm.send_instruction(scene_info.frame, PlatformAction.MOVE_RIGHT)
+                run=True
 
         #if hit the brick recheck the place
         if len(bricks)!=len(scene_info.bricks)+len(scene_info.hard_bricks):
