@@ -123,7 +123,7 @@ def ml_loop():
             elif scene_info.ball[1]<250:  #get the platform back to center
                 place_check=80
             
-            if scene_info.ball[1]>390 and abs(placex)<10:
+            if scene_info.ball[1]>390:
                     if placex>0:
                         comm.send_instruction(scene_info.frame, PlatformAction.MOVE_RIGHT)
                     else:
